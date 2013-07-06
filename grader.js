@@ -30,14 +30,16 @@ var CHECKSFILE_DEFAULT = "checks.json";
 var URL_DEFAULT = "http://glacial-everglades-2961.herokuapp.com/";
 
 var assertURLExists = function(url) {
+  console.log('checking URL ' + url + '...');
   rest.get(url).on('complete', function(result) {
     if (result instanceof Error) {
       console.log("Error: " + result.message);
       process.exit(1);
     } else {
-      return result;
+      fs.writeFileSync(HTMLFILE_DEFAULT, result);
     }
   });
+  return assertFileExists(HTMLFILE_DEFAULT);
 }
 
 var assertFileExists = function(infile) {
@@ -80,7 +82,8 @@ if(require.main == module) {
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
         .option('-u, --url <url_file>', 'URL to index.html', clone(assertURLExists), URL_DEFAULT)
         .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
+    
+    var checkJson = (program.file) ? checkHtmlFile(program.file, program.checks) : checkHtmlFile(program.url, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
 } else {
